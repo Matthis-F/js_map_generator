@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+  <head>
+    <script src='http://joeiddon.github.io/perlin/perlin.js'></script>
+    <meta charset="utf-8">
+    <title>Noise Test</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <canvas id="canvas-1" class="canvas"></canvas>
+    <script type="text/javascript">
+      perlin.seed();
+      var canvas = document.getElementById("canvas-1");
+      canvas.width = canvas.height = 1000;
+      var ctx = canvas.getContext('2d');
+      var pixels_x = 16;
+      var pixels_y = 16;
+      pixel_x_size = canvas.width/pixels_x;
+      pixel_y_size = canvas.height/pixels_y
+
+
+      for (var x = 0; x < pixels_y; x++) {
+        for (var y = 0; y < pixels_x; y++) {
+          var height = Math.abs(perlin.get(x/pixels_x,y/pixels_y))*300;
+          console.log(height);
+          ctx.fillStyle = 'rgb('+height+','+height+','+height+')';
+          ctx.fillRect(x*pixel_x_size,y*pixel_y_size,pixel_x_size,pixel_y_size);
+        }
+      }
+
+      ctx.fillStyle = 'rgb(255,0,1)';
+      ctx.fill();
+
+    </script>
+  </body>
+</html>
