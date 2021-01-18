@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" dir="ltr">
   <head>
-    <script src='http://joeiddon.github.io/perlin/perlin.js'></script>
     <script src='node_modules/simplex-noise/simplex-noise.js'></script>
-
     <meta charset="utf-8">
     <title>Noise Test</title>
     <link rel="stylesheet" href="style.css">
@@ -12,35 +10,74 @@
     <canvas id="canvas-1" class="canvas"></canvas>
     <script type="text/javascript">
 
+
+
       var simplex = new SimplexNoise(Math.random());
       var simplex2 = new SimplexNoise(Math.random());
+      var simplex3 = new SimplexNoise(Math.random());
 
-        var canvas = document.getElementById("canvas-1");
+
+      var canvas = document.getElementById("canvas-1");
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight-5;
       var ctx = canvas.getContext('2d');
 
-      var hex_size = 10;
+      var hex_size = 16.6;
 
 
       var i = 0;
+      function flat_hex_to_pixel(c,r){
+        var x = hex_size * 3/2 * c
+        var y = hex_size * Math.sqrt(3) * (r + 0.5 * (c&1))
+        var tab = [x,y]
+        return tab;
+        }
+        function index_to_img(index_val,x,y){
+
+          window.onload = function (){
+                var canvas  = document.getElementById("canvas-1");
+                var context = canvas.getContext('2d');
+
+                var img = new Image();
+                img.src = 'hextiles.png';
+                img.onload = function ()
+                {
+                    context.drawImage(img, (32*index_val)%512, Math.floor(index_val/16)*48,32,48,x,y,32,48);
+                }
+            }
+        }
+
+
+        function index_to_img(index_val,x,y){
+
+
+                var canvas  = document.getElementById("canvas-1");
+                var context = canvas.getContext('2d');
+
+                var img = new Image();
+                img.src = 'hextiles.png';
+                img.onload = function (e)
+                {
+                    context.drawImage(img, (32*index_val)%512, Math.floor(index_val/16)*48,32,48,x,y,32,48);
+                }
+
+        }
+
 
       function draw_hexagon(center_x,center_y){
-        ctx.beginPath();
-        var d = Math.round((Math.sqrt((center_x/hex_size-100)*(center_x/hex_size-100)+(center_y/hex_size-50)*(center_y/hex_size-50))));//this si the distance from center
+          ctx.beginPath();
+          var height = Math.round((((simplex.noise2D(center_x/3000, center_y/3000))+1)/2)*255);// From range -1 - 1 to range 0 - 100
 
-        var height = Math.round(((simplex.noise2D(x/200, y/200)+1)/2)*255);// From range -1 - 1 to range 0 - 100
+          var biome = (((simplex2.noise2D(x/50, y/50))+1)/2)*height*1.5;
 
-        var biome = (simplex2.noise2D(x/500, y/500)*255);
-
-          ctx.fillStyle = 'rgb('+height+','+0+',100)';
-      /*  for (var i = 1; i <= 6; i++) {
-          var angle_deg = 60 * i;
-          var angle_rad = Math.PI / 180 * angle_deg;
-          var x_value = center_x+Math.cos(angle_rad)*hex_size;
-          var y_value = center_y+Math.sin(angle_rad)*hex_size;
+          ctx.fillStyle = 'rgb('+height+','+biome+',100)';
+          for (var i = 1; i <= 6; i++) {
+            var angle_deg = 60 * i;
+            var angle_rad = Math.PI / 180 * angle_deg;
+            var x_value = center_x+Math.cos(angle_rad)*hex_size;
+            var y_value = center_y+Math.sin(angle_rad)*hex_size;
           ctx.lineTo(x_value,y_value);
-        }*/
+        }
 
         ctx.fillText(d, center_x, center_y);
 
@@ -48,15 +85,92 @@
         ctx.fill();
       }
 
+      for (var x = 0; x < 32; x++) {
+        for (var y = 0; y < 32; y++) {
 
-      for (var x = 1; x < 128; x++) {
-        for (var y = 1; y < 128; y++) {
-          i++;
-          if(i%2 == 0){
-            draw_hexagon((x*hex_size*2)/(4/3),(y*hex_size*Math.sqrt(3))/2);
+          var coord = flat_hex_to_pixel(x,y);
+          //var d = Math.round((Math.sqrt((x/hex_size-100)*(x/hex_size-100)+(y/hex_size-50)*(y/hex_size-50))));//this si the distance from center
+
+          var height = (Math.round((((simplex.noise2D(x/25,y/25))+1)/2)*100));// From range -1 - 1 to range 0 - 100
+          var biome = (((simplex2.noise2D(x/50, y/50))+1)/2)*100;
+          var cities = (((simplex3.noise2D(x/10, y/10))+1)/2)*100;
+
+            if(height < 30){
+            index_to_img(84,Math.round(coord[0]),Math.round(coord[1]));
           }
+          if(height >= 30 && height <= 40){
+
+            index_to_img(80,Math.round(coord[0]),Math.round(coord[1]));
+          }
+          if(height >= 40 && height <= 50){
+            if(biome >=50){
+              if(cities < 82){
+                index_to_img(5,Math.round(coord[0]),Math.round(coord[1]));
+              }
+              else if(cities >= 82 && cities <= 90){
+                index_to_img(112,Math.round(coord[0]),Math.round(coord[1]));
+
+              }
+              else if(cities > 90 && cities <= 95){
+                index_to_img(113,Math.round(coord[0]),Math.round(coord[1]));
+
+              }
+              else if(cities > 95){
+                index_to_img(114,Math.round(coord[0]),Math.round(coord[1]));
+
+              }
+            }
+            else{
+              if(cities < 82){
+                index_to_img(1,Math.round(coord[0]),Math.round(coord[1]));
+              }
+              else if(cities >= 82 && cities <= 90){
+                index_to_img(112,Math.round(coord[0]),Math.round(coord[1]));
+
+              }
+              else if(cities > 90 && cities <= 95){
+                index_to_img(113,Math.round(coord[0]),Math.round(coord[1]));
+
+              }
+              else if(cities > 95){
+                index_to_img(114,Math.round(coord[0]),Math.round(coord[1]));
+
+              }
+            }
+
+          }
+          if(height > 50 && height <= 60){
+            if(biome >=50){
+              index_to_img(23,Math.round(coord[0]),Math.round(coord[1]));
+            }
+            else{
+              index_to_img(2,Math.round(coord[0]),Math.round(coord[1]));
+
+            }
+          }
+          if(height > 60 && height <= 75){
+            index_to_img(11,Math.round(coord[0]),Math.round(coord[1]));
+
+          }
+          if(height > 75 && height <= 85){
+            index_to_img(52,Math.round(coord[0]),Math.round(coord[1]));
+
+          }
+          if(height > 85 && height < 95){
+            index_to_img(56,Math.round(coord[0]),Math.round(coord[1]));
+
+          }
+          if(height >= 95){
+            index_to_img(56,Math.round(coord[0]),Math.round(coord[1]));
+            index_to_img(139,Math.round(coord[0]),Math.round(coord[1]));
+
+          }
+
+          ctx.fillStyle = "black";
+          ctx.textBaseline = "top";
         }
       }
+
 
     </script>
   </body>
