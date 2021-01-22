@@ -86,7 +86,7 @@
         var x = this.x;
         var y = this.y;
         var img = new Image();
-        img.src = 'hextiles.png';
+        img.src = 'ressources/hextiles.png';
 
         img.onload = function() {
           context.drawImage(img, (32 * index_val) % 512, Math.floor(index_val / 16) * 48, 32, 48, Math.floor(x), Math.floor(y), 32, 48);
