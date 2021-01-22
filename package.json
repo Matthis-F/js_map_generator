@@ -14,5 +14,6 @@
   "license": "ISC",
   "devDependencies": {
     "simplex-noise": "^2.4.0"
-  }
+  },
+
 }

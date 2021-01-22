@@ -12,36 +12,43 @@
   <canvas id="canvas-1" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
   <canvas id="canvas-2" width="100" height="100" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
   <script type="text/javascript">
+
+  //Canvas for printing tiles
     const canvas = document.getElementById("canvas-1");
     const context = canvas.getContext('2d');
-
-
-    const canvas2 = document.getElementById("canvas-2");
-    const context2 = canvas2.getContext('2d');
-
-
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - 5;
 
+
+//Canvas for pathfinding
+    const canvas2 = document.getElementById("canvas-2");
+    const context2 = canvas2.getContext('2d');
     canvas2.width = window.innerWidth;
     canvas2.height = window.innerHeight - 5;
 
-    var p_litle_city = 990;
-    var p_average_city = 994;
-    var p_max_city = 997;
+    var p_litle_city = 990;//probability of little city (range 990 - 994)
+    var p_average_city = 994;//probability of average city ( range 994 -997)
+    var p_max_city = 997;//probability of big City ( range 997 - 1000)
+
+
     var simplex = new SimplexNoise(Math.random()); //this one is used to generate the height
     var simplex2 = new SimplexNoise(Math.random()); //this one is used to generate the humidity (biomes)
-    var simplex3 = new SimplexNoise(Math.random()); //This one is used to generate population density (cities)
+
+
+    //Cities names (generated using https://www.samcodes.co.uk/project/markov-namegen/ )
     var cities_names = ["Csorore", "Newportwort", "Mcalls", "Independale", "Burgh", "Houstockton", "Chattlerock", "Palmbeach", "Huntsvillo", "Irvington", "Clearwateo", "Wichicago", "Fairiet", "Irvington", "Vallertonio", "Elmond",
       "Delphia", "Mesquirrel", "LittleBrokepines", "Spring", "Garlanguage", "Manchorage", "Orangeles", "Edinburgh", "Mivallejo", "Gamemonte", "Gamemake", "Adena", "Synccharity", "Uniconv", "Fortcollide", "Objects", "Westvallen", "Crypton",
       "Simivallen", "Nemerald", "Everest", "Winster", "Ester", "Bakerland"
     ];
-    var cities_prefixes= ["New","Fort","North","South","Saint","Los","","","","","",""]
+    //Prefixes used for cities
+    var cities_prefixes= ["New","Fort","North","South","Saint","Los","","","","","",""];
+
     const hex_size = 16.6;
 
-
+    //Our grid matrix containing the Hex
     var mapgrid = [];
 
+    //An array containing the tiles marked as city
     var cities_hex = [];
 
     class Hex {
@@ -56,11 +63,11 @@
         this.path = false; //Tell if the tile is part of the current path
         this.height = Math.round((((simplex.noise2D(x / 1000, y / 1000)) + 1) / 2) * 100);
         this.humidity = Math.round((((simplex2.noise2D(x / 2000, y / 2000)) + 1) / 2) * 100);
-        this.cities = 0;
+        this.cities = 0;//0 No city, 1 small City, 2 average city, 3 Big city
 
 
       }
-
+      //this function is used to print a Hexagon (Non an image)
       printhex() {
         context2.beginPath();
         context2.fillStyle = 'rgb(' + this.height + ',' + 0 + ',100)';
@@ -74,7 +81,7 @@
         context2.closePath();
         context2.fill();
       }
-
+      //This function prints an image given as index
       print_hex_as_img(index_val) {
         var x = this.x;
         var y = this.y;
@@ -85,12 +92,9 @@
           context.drawImage(img, (32 * index_val) % 512, Math.floor(index_val / 16) * 48, 32, 48, Math.floor(x), Math.floor(y), 32, 48);
         }
       }
-
+      //This function prints a name on the map (layer 2 canvas 2)
       print_text(text) {
-        context2.lineWidth = 4;
         context2.textAlign = "center";
-
-        context2.strokeStyle = 'white';
         context2.fillStyle = "black";
         context2.font = "bold 15px Arial";
         context2.shadowBlur = 10;
@@ -98,7 +102,7 @@
         context2.fillText(text, this.x, this.y);
         context2.shadowOffs = 0;
       }
-
+      //this function returns the neighbors by reading the matrix
       getNeighbors(grid) {
         let neighbors = [];
 
@@ -134,27 +138,13 @@
         return neighbors;
       }
 
-
-      update_costs(start, end) {
-
-        this.g_cost = this.distance(start);
-        this.h_cost = this.distance(end);
-        this.f_cost = this.g_cost + this.h_cost;
-      }
-
+      //mmannathan distance between 2 hex (Not used )
       distance(target) {
         return Math.max(Math.abs(this.q - target.q), Math.abs(this.r - target.r), Math.abs(this.s - target.s))
       }
 
     }
-
-    function remove_from_array(array, element) {
-      const index = array.indexOf(element);
-      if (index > -1) {
-        array.splice(index, 1);
-      }
-    }
-
+    //used to convert coordinates to pixel that can be represented on screen
     function gridToPixelCoords(c, r) {
       var x = hex_size * 3 / 2 * c
       var y = hex_size * Math.sqrt(3) * (r + 0.5 * (c & 1))
@@ -164,7 +154,7 @@
 
 
 
-
+//This function initialize the map
     function createmap(grid, h, w) {
       for (let i = 0; i < h; i++) {
         grid.push([]);
@@ -175,6 +165,7 @@
       }
     }
 
+  //This function prints the map (Using conditions)
     function printmap(mapgrid) {
       for (col of mapgrid) {
         for (hex of col) {
@@ -373,7 +364,7 @@
 
 
 
-
+//this function prints the path
     function printpath(path) {
       context2.beginPath();
 
@@ -387,8 +378,8 @@
       context2.stroke();
     }
 
-    function pathfinding(mapgrid, start, end, blocked) {
-      console.log("here");
+//This function search for a path
+    function pathfinding(mapgrid, start, end) {
       var queue = [];
       var path = [];
       queue.push(start);
@@ -456,14 +447,7 @@
     }
 
 
-
-    function print_neighbors(start, mapgrid) {
-      var n = start.getNeighbors(mapgrid);
-      for (var i = 0; i < n.length; i++) {
-        n[i].printhex();
-      }
-    }
-
+    //this function returns all hexagons marked as cities
     function search_cities(mapgrid) {
       var cities = [];
       for (var i = 0; i < mapgrid.length; i++) {
@@ -477,40 +461,28 @@
       return cities;
     }
 
-    function find_blocked(mapgrid) {
-      var blocked = [];
-      for (var i = 0; i < mapgrid.length; i++) {
-        for (var j = 0; j < mapgrid[i].length; j++) {
-          if (mapgrid[i][j].height > 32 && mapgrid[i][j].height < 80) {
-            blocked.push(mapgrid[i][j]);
-          }
-        }
+    function create_city_paths(mapgrid){
+      var cities = search_cities(mapgrid);//Getting all the cities
+
+      for (var i = 0; i < cities.length ; i++) {
+        var name = cities_names[Math.round(Math.random() * (cities_names.length-1))];
+        var prefix = cities_prefixes[Math.round(Math.random() * (cities_prefixes.length-1) )];
+
+        cities[i].print_text(prefix +" " +name);
+
+        var path = pathfinding(mapgrid, cities[Math.round(Math.random() * cities.length)], cities[i]);
+        printpath(path);
       }
-
-      return blocked;
     }
 
 
+//-------------- MAIN CODE -------------------------------------------------
+    createmap(mapgrid, 40, 40);//Creating a map
+    printmap(mapgrid);//printing the map
+    create_city_paths(mapgrid);//prints path and names of the cities
 
 
-    createmap(mapgrid, 40, 40);
-    printmap(mapgrid);
 
-    cities_hex.sort(function(a, b) {
-      return a.cities - b.cities;
-    })
-
-    var cities = search_cities(mapgrid);
-    var blocked = find_blocked;
-    for (var i = 0; i < cities.length ; i++) {
-      var name = cities_names[Math.round(Math.random() * (cities_names.length-1))];
-      var prefix = cities_prefixes[Math.round(Math.random() * (cities_prefixes.length-1) )];
-
-      cities[i].print_text(prefix +" " +name);
-
-      var path = pathfinding(mapgrid, cities[Math.round(Math.random() * cities.length)], cities[i], blocked);
-      printpath(path);
-    }
   </script>
 </body>
 
