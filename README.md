@@ -9,6 +9,6 @@ Intended as a small school project, this is a hexagons based map generator writt
 ## How to use it ?
 Just open the index.html in a browser
 
-![Alt text](/ressources/screenshots/screenshot_1.png.jpg?raw=true "Screenshot 1")
-![Alt text](/ressources/screenshots/screenshot_2.png.jpg?raw=true "Screenshot 2")
-![Alt text](/ressources/screenshots/screenshot_3.png.jpg?raw=true "Screenshot 3")
+![Alt text](ressources/screenshots/screenshot_1.png?raw=true "Screenshot 1")
+![Alt text](ressources/screenshots/screenshot_2.png?raw=true "Screenshot 2")
+![Alt text](ressources/screenshots/screenshot_3.png?raw=true "Screenshot 3")
